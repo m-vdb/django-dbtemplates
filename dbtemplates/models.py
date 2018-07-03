@@ -10,8 +10,10 @@ from django.db.models import signals
 from django.template import TemplateDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
+import six
 
 
+@six.python_2_unicode_compatible
 class Template(models.Model):
     """
     Defines a template model for use with the database template loader.
@@ -19,6 +21,17 @@ class Template(models.Model):
     """
     name = models.CharField(_('name'), max_length=100,
                             help_text=_("Example: 'flatpages/default.html'"))
+    title = models.CharField(
+        _('title'), max_length=100, default='', blank=True,
+        help_text=_("The title of this template, used for display only.")
+    )
+    category = models.CharField(
+        _('category'), max_length=50, default='', blank=True,
+        help_text=_(
+            "The category for this template, "
+            "useful if you want to organize your templates."
+        )
+    )
     content = models.TextField(_('content'), blank=True)
     sites = models.ManyToManyField(Site, verbose_name=_(u'sites'),
                                    blank=True)
@@ -36,8 +49,8 @@ class Template(models.Model):
         verbose_name_plural = _('templates')
         ordering = ('name',)
 
-    def __unicode__(self):
-        return self.name
+    def __str__(self):
+        return self.title or self.name
 
     def populate(self, name=None):
         """
